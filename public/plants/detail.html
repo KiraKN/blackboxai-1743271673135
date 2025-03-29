@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plant Details</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script>
+        async function loadPlant() {
+            const plantId = window.location.pathname.split('/').pop();
+            try {
+                const response = await fetch(`/api/plants.php?id=${plantId}`);
+                const data = await response.json();
+                if (data.success) {
+                    renderPlant(data.plant);
+                }
+            } catch (error) {
+                console.error('Error loading plant:', error);
+            }
+        }
+
+        function renderPlant(plant) {
+            document.title = `${plant.name} | Plant Details`;
+            document.getElementById('plant-name').textContent = plant.name;
+            document.getElementById('scientific-name').textContent = plant.scientific_name || 'Not specified';
+            document.getElementById('plant-description').textContent = plant.description || 'No description available';
+            document.getElementById('care-instructions').textContent = plant.care_instructions || 'Not provided';
+            document.getElementById('water-needs').textContent = plant.water_needs || 'Not specified';
+            document.getElementById('light-requirements').textContent = plant.light_requirements || 'Not specified';
+            document.getElementById('growth-rate').textContent = plant.growth_rate || 'Not specified';
+            document.getElementById('toxicity').textContent = plant.toxicity || 'Not specified';
+            
+            const imageContainer = document.getElementById('plant-image');
+            imageContainer.innerHTML = plant.image_path ? 
+                `<img src="${plant.image_path}" alt="${plant.name}" class="w-full h-full object-cover rounded-lg">` :
+                `<div class="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100 rounded-lg">
+                    <i class="fas fa-leaf text-8xl"></i>
+                </div>`;
+        }
+
+        document.addEventListener('DOMContentLoaded', loadPlant);
+    </script>
+</head>
+<body class="bg-gray-50">
+    <header class="bg-green-700 text-white shadow">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center">
+                <h1 class="text-3xl font-bold" id="plant-name">Plant Details</h1>
+                <a href="/plants" class="text-white hover:text-gray-200">
+                    <i class="fas fa-arrow-left mr-1"></i> Back to All Plants
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+                <h2 class="text-lg leading-6 font-medium text-gray-900">Plant Information</h2>
+                <p class="mt-1 text-sm text-gray-500">Detailed information about this plant</p>
+            </div>
+            <div class="px-4 py-5 sm:p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-1">
+                        <div class="h-64 w-full" id="plant-image">
+                            <!-- Plant image will be loaded here -->
+                        </div>
+                    </div>
+                    <div class="lg:col-span-2">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-900">Scientific Name</h3>
+                                <p class="mt-1 text-gray-600" id="scientific-name"></p>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-900">Growth Rate</h3>
+                                <p class="mt-1 text-gray-600" id="growth-rate"></p>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-900">Water Needs</h3>
+                                <p class="mt-1 text-gray-600" id="water-needs"></p>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-900">Light Requirements</h3>
+                                <p class="mt-1 text-gray-600" id="light-requirements"></p>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-900">Toxicity</h3>
+                                <p class="mt-1 text-gray-600" id="toxicity"></p>
+                            </div>
+                        </div>
+                        <div class="mt-6">
+                            <h3 class="text-lg font-medium text-gray-900">Description</h3>
+                            <p class="mt-1 text-gray-600" id="plant-description"></p>
+                        </div>
+                        <div class="mt-6">
+                            <h3 class="text-lg font-medium text-gray-900">Care Instructions</h3>
+                            <p class="mt-1 text-gray-600" id="care-instructions"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
