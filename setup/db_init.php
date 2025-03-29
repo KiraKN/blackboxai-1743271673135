@@ -79,6 +79,46 @@ function initializeDatabase() {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
     ");
+
+    // Create plants table
+    $db->exec("
+        CREATE TABLE IF NOT EXISTS plants (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            scientific_name TEXT,
+            description TEXT,
+            care_instructions TEXT,
+            water_needs TEXT,
+            light_requirements TEXT,
+            growth_rate TEXT,
+            toxicity TEXT,
+            image_path TEXT,
+            is_featured BOOLEAN DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    ");
+
+    // Create plant_categories table
+    $db->exec("
+        CREATE TABLE IF NOT EXISTS plant_categories (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL UNIQUE,
+            description TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    ");
+
+    // Create plant_category_map table
+    $db->exec("
+        CREATE TABLE IF NOT EXISTS plant_category_map (
+            plant_id INTEGER NOT NULL,
+            category_id INTEGER NOT NULL,
+            PRIMARY KEY (plant_id, category_id),
+            FOREIGN KEY (plant_id) REFERENCES plants(id) ON DELETE CASCADE,
+            FOREIGN KEY (category_id) REFERENCES plant_categories(id) ON DELETE CASCADE
+        );
+    ");
     
     return true;
 }
