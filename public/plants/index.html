@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Plant Collection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script>
+        async function loadPlants() {
+            try {
+                // Load featured plants
+                const featuredResponse = await fetch('/api/plants.php?featured=true');
+                const featuredData = await featuredResponse.json();
+                
+                // Load all plants
+                const allResponse = await fetch('/api/plants.php');
+                const allData = await allResponse.json();
+                
+                // Combine results (featured first)
+                const plants = [
+                    ...featuredData.plants,
+                    ...allData.plants.filter(p => !p.is_featured)
+                ];
+                
+                renderPlants(plants);
+            } catch (error) {
+                console.error('Error loading plants:', error);
+            }
+        }
+
+        function renderPlants(plants) {
+            const container = document.getElementById('plants-container');
+            container.innerHTML = '';
+            
+            if (plants.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-3 text-center py-12">
+                        <i class="fas fa-leaf text-5xl text-gray-400 mb-4"></i>
+                        <p class="text-gray-500">No plants found in our collection</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            plants.forEach(plant => {
+                const card = document.createElement('div');
+                card.className = `bg-white rounded-lg shadow-md overflow-hidden ${
+                    plant.is_featured ? 'ring-2 ring-yellow-400' : ''
+                }`;
+                card.innerHTML = `
+                    <div class="h-48 bg-gray-200 overflow-hidden relative">
+                        ${plant.image_path ? 
+                            `<img src="${plant.image_path}" alt="${plant.name}" class="w-full h-full object-cover">` : 
+                            `<div class="w-full h-full flex items-center justify-center text-gray-400">
+                                <i class="fas fa-leaf text-5xl"></i>
+                            </div>`
+                        }
+                        ${plant.is_featured ? `
+                            <span class="absolute top-2 right-2 bg-yellow-400 text-yellow-800 text-xs font-bold px-2 py-1 rounded-full">
+                                Featured
+                            </span>
+                        ` : ''}
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-bold text-lg mb-1">${highlightMatches(plant.name, searchInput.value)}</h3>
+                        <p class="text-gray-600 italic mb-2">${plant.scientific_name ? highlightMatches(plant.scientific_name, searchInput.value) : ''}</p>
+                        <a href="/plants/${plant.id}" class="inline-block mt-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+                            View Details <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Search functionality
+        const searchInput = document.getElementById('plant-search');
+        let searchTimeout;
+        
+        searchInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const searchTerm = searchInput.value.trim();
+                if (searchTerm.length > 0) {
+                    fetch(`/api/plants.php?search=${encodeURIComponent(searchTerm)}`)
+                        .then(response => response.json())
+                        .then(data => renderPlants(data.plants))
+                        .catch(error => console.error('Search error:', error));
+                } else {
+                    loadPlants(); // Reload all plants if search is cleared
+                }
+            }, 300); // 300ms debounce
+        });
+
+        document.addEventListener('DOMContentLoaded', loadPlants);
+    </script>
+</head>
+<body class="bg-gray-50">
+    <header class="bg-green-700 text-white shadow">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <h1 class="text-3xl font-bold">Our Plant Collection</h1>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="plants-container">
+            <!-- Plants will be loaded here -->
+        </div>
+    </main>
+</body>
+</html>
